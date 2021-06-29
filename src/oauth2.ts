@@ -1,4 +1,4 @@
-import { CONSTANTS, makeRequest, UTILS } from './util'
+import { CONSTANTS, makeRequest, UTILS } from './util';
 import {
 	Snowflake,
 	APIGuildMember,
@@ -7,7 +7,7 @@ import {
 	RESTGetAPICurrentUserGuildsResult,
 	RESTGetAPICurrentUserResult,
 	RESTPostOAuth2AccessTokenResult,
-} from 'discord-api-types/v8'
+} from 'discord-api-types/v8';
 
 export async function getAccessToken(code: string) {
 	const body = new URLSearchParams({
@@ -16,27 +16,27 @@ export async function getAccessToken(code: string) {
 		grant_type: 'authorization_code',
 		code,
 		redirect_uri: REDIRECT_URI,
-	})
+	});
 
 	return makeRequest<RESTPostOAuth2AccessTokenResult>(OAuth2Routes.tokenURL, {
 		method: 'POST',
 		headers: CONSTANTS.headers.urlencoded,
 		body,
-	})
+	});
 }
 
 export async function getUserGuilds(access_token: string): Promise<string[]> {
 	const guildsReq = await makeRequest<RESTGetAPICurrentUserGuildsResult>(Routes.userGuilds(), {
 		headers: UTILS.auth(access_token),
-	})
-	const guilds = await guildsReq[0]
-	return guilds.map((x) => x.id)
+	});
+	const guilds = await guildsReq[0];
+	return guilds.map((x) => x.id);
 }
 
 export async function getUserDetails(access_token: string) {
 	return makeRequest<RESTGetAPICurrentUserResult>(Routes.user(), {
 		headers: UTILS.auth(access_token),
-	}).then((x) => x[0])
+	}).then((x) => x[0]);
 }
 
 export async function joinUserToGuild(access_token: string, user_id: Snowflake) {
@@ -47,15 +47,15 @@ export async function joinUserToGuild(access_token: string, user_id: Snowflake) 
 			...UTILS.auth(DISCORD_BOT_TOKEN, 'Bot'),
 		},
 		body: JSON.stringify({ access_token }),
-	})
+	});
 }
 
 export async function revokeToken(access_token: string) {
 	const body = new URLSearchParams({
 		token: access_token,
 		token_type_hint: 'access_token',
-	})
-	const creds = btoa(`${OAUTH2_CLIENT_ID}:${OAUTH2_CLIENT_SECRET}`)
+	});
+	const creds = btoa(`${OAUTH2_CLIENT_ID}:${OAUTH2_CLIENT_SECRET}`);
 
 	return makeRequest(OAuth2Routes.tokenRevocationURL, {
 		method: 'POST',
@@ -64,5 +64,5 @@ export async function revokeToken(access_token: string) {
 			...UTILS.auth(creds, 'Basic'),
 		},
 		body,
-	})
+	});
 }
