@@ -1,9 +1,9 @@
-import { OAuth2Routes, Routes } from 'discord-api-types/v8'
 import { CONSTANTS, makeRequest, UTILS } from './util'
-// eslint-disable-next-line no-duplicate-imports
-import type {
+import {
 	Snowflake,
 	APIGuildMember,
+	OAuth2Routes,
+	Routes,
 	RESTGetAPICurrentUserGuildsResult,
 	RESTGetAPICurrentUserResult,
 	RESTPostOAuth2AccessTokenResult,

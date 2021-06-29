@@ -1,9 +1,9 @@
-module.exports = {
-    extends: "marine/prettier/node",
-    parserOptions: {
+{
+    "extends": "marine/prettier/node",
+    "parserOptions": {
         "project": "./tsconfig.eslint.json"
     },
-    rules: {
+    "rules": {
         "@typescript-eslint/naming-convention": "off"
     }
 }

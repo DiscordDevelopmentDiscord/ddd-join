@@ -25,7 +25,7 @@ export async function makeRequest<T extends Record<string, any>>(
 		throw new DiscordAPIError(parseErrorResponseBody.message, options.method!, route, req.status)
 	}
 
-	return [req.json() as Promise<T>, req]
+	return [(await req.clone().json()) as Promise<T>, req]
 }
 
 export class DiscordAPIError extends Error {

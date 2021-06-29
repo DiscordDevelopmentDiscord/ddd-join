@@ -1,4 +1,4 @@
-import { Snowflake } from 'discord-api-types'
+import { Snowflake } from 'discord-api-types/v8'
 
 declare global {
 	const OAUTH2_CLIENT_ID: Snowflake

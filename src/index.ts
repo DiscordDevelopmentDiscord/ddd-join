@@ -41,7 +41,7 @@ router.get`/callback`.handle(async (ctx) => {
 		const accessToken = accessTokenBody['access_token']
 		const userGuilds = await getUserGuilds(accessToken)
 
-		if (!userGuilds.some((x) => WHITELISTED_GUILDS.includes(x)))
+		if (!WHITELISTED_GUILDS.some((x) => userGuilds.includes(x)))
 			return ctx.end('You are not authorized to join DDD.', { status: 403 })
 
 		const userDetails = await getUserDetails(accessToken)
