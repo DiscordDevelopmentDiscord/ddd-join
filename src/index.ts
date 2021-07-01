@@ -38,29 +38,29 @@ router.get`/callback`.handle(async (ctx) => {
 	try {
 		const accessTokenReq = await getAccessToken(code);
 		const accessTokenBody = await accessTokenReq[0];
-		const accessToken = accessTokenBody['access_token'];
+		const accessToken = accessTokenBody.access_token;
 		const userGuilds = await getUserGuilds(accessToken);
 
 		if (!WHITELISTED_GUILDS.some((x) => userGuilds.includes(x)))
 			return ctx.end('You are not authorized to join DDD.', { status: 403 });
 
 		const userDetails = await getUserDetails(accessToken);
-		const joinUserToGuildStatus = (await (await joinUserToGuild(accessToken, userDetails.id))[1]).status;
+		const joinUserToGuildResponse = await (await joinUserToGuild(accessToken, userDetails.id))[1];
 		const revokeUserTokenResponse = await (await revokeToken(accessToken))[1];
+
+		if (!joinUserToGuildResponse.ok) return ctx.end('An unexpected error occurred while joining you to this guild.');
 
 		if (!revokeUserTokenResponse.ok)
 			return ctx.end(
-				`An unexpected error occurred while joining you to the guild. Your authorization token could not be revoked, you can do so in your Discord client under User Settings > Authorized Apps`,
+				'An unexpected error occurred while revoking your access token. Your authorization token could not be revoked, you can do so in your Discord client under User Settings > Authorized Apps',
 			);
 
-		if (joinUserToGuildStatus === 201 || joinUserToGuildStatus === 204) {
-			return ctx.end(`Redirecting...`, {
-				status: 302,
-				headers: {
-					location: LANDING_URL,
-				},
-			});
-		}
+		return ctx.end(`Redirecting...`, {
+			status: 302,
+			headers: {
+				location: LANDING_URL,
+			},
+		});
 	} catch (e) {
 		if (e instanceof DiscordAPIError) return ctx.end(e.message, { status: e.status });
 		return ctx.end(e.message, { status: 500 });
