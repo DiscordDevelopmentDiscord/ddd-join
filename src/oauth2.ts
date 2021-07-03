@@ -41,7 +41,7 @@ export async function getUserDetails(access_token: string) {
 }
 
 export async function joinUserToGuild(access_token: string, user_id: Snowflake) {
-	return makeRequest<APIGuildMember | Record<never, never>>(Routes.guildMember(DISCORD_GUILD_ID, user_id), {
+	return makeRequest<APIGuildMember | Record<never, never>>(RouteBases.api + Routes.guildMember(DISCORD_GUILD_ID, user_id), {
 		method: HTTPMethods.Put,
 		headers: {
 			...CONSTANTS.headers.json,
