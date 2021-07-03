@@ -1,112 +1,84 @@
-import { getErrorPageHTML, Router } from '8track'
-import {
-  getAccessToken,
-  getUserDetails,
-  getUserGuilds,
-  joinUserToGuild,
-  revokeToken,
-} from './oauth2'
+import { getErrorPageHTML, Router } from '8track';
+import { getAccessToken, getUserDetails, getUserGuilds, joinUserToGuild, revokeToken } from './oauth2';
+import { DiscordAPIError } from './util';
 
-const router = new Router()
+const router = new Router();
 
-const WHITELISTED_GUILDS = ['813988123260092416', '667560445975986187']
+const WHITELISTED_GUILDS = ['813988123260092416', '667560445975986187'];
 
-const LANDING_URL =
-  'https://discord.com/channels/844686108125429801/846770612110229544/846902287728640000'
+const LANDING_URL = 'https://discord.com/channels/844686108125429801/846770612110229544/846902287728640000';
 
 router.get`/`.handle((ctx) => {
-  let auth_url = new URL(`https://discord.com/oauth2/authorize`)
+	const authURL = new URL(`https://discord.com/oauth2/authorize`);
 
-  auth_url.searchParams.set('client_id', OAUTH2_CLIENT_ID)
-  auth_url.searchParams.set('redirect_uri', REDIRECT_URI)
-  auth_url.searchParams.set('response_type', 'code')
-  auth_url.searchParams.set('scope', 'identify guilds guilds.join')
-  auth_url.searchParams.set('prompt', 'none')
+	authURL.searchParams.set('client_id', OAUTH2_CLIENT_ID);
+	authURL.searchParams.set('redirect_uri', REDIRECT_URI);
+	authURL.searchParams.set('response_type', 'code');
+	authURL.searchParams.set('scope', 'identify guilds guilds.join');
+	authURL.searchParams.set('prompt', 'none');
 
-  ctx.end(
-    new Response('Redirecting...', {
-      status: 302,
-      headers: {
-        Location: auth_url.toString(),
-      },
-    }),
-  )
-})
+	ctx.end(
+		new Response('Redirecting...', {
+			status: 302,
+			headers: {
+				location: authURL.toString(),
+			},
+		}),
+	);
+});
 
 router.get`/callback`.handle(async (ctx) => {
-  let url = new URL(ctx.event.request.url)
-  let code = url.searchParams.get('code')
+	const url = new URL(ctx.event.request.url);
+	const code = url.searchParams.get('code');
 
-  if (!code) {
-    return ctx.end('Missing authorization code', { status: 400 })
-  }
+	if (!code) {
+		return ctx.end('Missing authorization code', { status: 400 });
+	}
 
-  let accessTokenResp = await getAccessToken(code)
+	try {
+		const accessTokenReq = await getAccessToken(code);
+		const accessTokenBody = await accessTokenReq[0];
+		const accessToken = accessTokenBody.access_token;
+		const userGuilds = await getUserGuilds(accessToken);
 
-  if (accessTokenResp.status !== 200) {
-    return ctx.end(
-      `${
-        accessTokenResp.status
-      } error from Discord: ${await accessTokenResp.text()}`,
-      { status: 400 },
-    )
-  }
+		if (!WHITELISTED_GUILDS.some((x) => userGuilds.includes(x)))
+			return ctx.end('You are not authorized to join DDD.', { status: 403 });
 
-  let accessToken = (await accessTokenResp.json())['access_token']
+		const userDetails = await getUserDetails(accessToken);
+		const joinUserToGuildResponse = await (await joinUserToGuild(accessToken, userDetails.id))[1];
+		const revokeUserTokenResponse = await (await revokeToken(accessToken))[1];
 
-  let userGuilds = await getUserGuilds(accessToken)
+		if (!joinUserToGuildResponse.ok) return ctx.end('An unexpected error occurred while joining you to this guild.');
 
-  let isAllowed = false
+		if (!revokeUserTokenResponse.ok)
+			return ctx.end(
+				'An unexpected error occurred while revoking your access token. Your authorization token could not be revoked, you can do so in your Discord client under User Settings > Authorized Apps',
+			);
 
-  for (var guild of WHITELISTED_GUILDS) {
-    if (userGuilds.indexOf(guild) !== -1) {
-      isAllowed = true
-    }
-  }
+		return ctx.end(`Redirecting...`, {
+			status: 302,
+			headers: {
+				location: LANDING_URL,
+			},
+		});
+	} catch (e) {
+		if (e instanceof DiscordAPIError) return ctx.end(e.message, { status: e.status });
+		return ctx.end(e.message, { status: 500 });
+	}
+});
 
-  if (!isAllowed) {
-    return ctx.end('You are not authorized to join DDD.', { status: 403 })
-  }
+router.all`(.*)`.handle((ctx) => ctx.end('Not found', { status: 404 }));
 
-  let userDetails = await getUserDetails(accessToken)
+addEventListener('fetch', (e) => {
+	const res = router.getResponseForEvent(e).catch(
+		(error) =>
+			new Response(getErrorPageHTML(e.request, error), {
+				status: 500,
+				headers: {
+					'content-type': 'text/html',
+				},
+			}),
+	);
 
-  let joinCode = await joinUserToGuild(accessToken, userDetails['id'])
-
-  let revokeResponse = await revokeToken(accessToken)
-
-  let msg = ''
-
-  if (revokeResponse.status !== 200) {
-    msg =
-      ' Your authorization token could not be revoked, you can do so in your Discord client under User Settings > Authorized Apps'
-  }
-
-  if (joinCode === 201 || joinCode === 204) {
-    return ctx.end(`Redirecting...`, {
-      status: 302,
-      headers: {
-        Location: LANDING_URL,
-      },
-    })
-  } else {
-    return ctx.end(
-      `An unexpected error occurred while joining you to the guild.${msg}`,
-    )
-  }
-})
-
-router.all`(.*)`.handle((ctx) => ctx.end('Not found', { status: 404 }))
-
-addEventListener('fetch', e => {
-  const res = router.getResponseForEvent(e).catch(
-    error =>
-      new Response(getErrorPageHTML(e.request, error), {
-        status: 500,
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      }),
-  )
-
-  e.respondWith(res as any)
-})
+	e.respondWith(res as any);
+});

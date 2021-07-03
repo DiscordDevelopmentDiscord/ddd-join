@@ -2,23 +2,37 @@
   "name": "ddd-join",
   "version": "1.0.0",
   "description": "Cloudflare Worker for joining members to DDD",
-  "main": "index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "webpack",
-    "dev": "NODE_ENV=development npm run build",
-    "format": "prettier --write '**/*.{ts,js,css,json,md}'"
+    "build": "rollup -c",
+    "lint": "npx eslint src/ --ext .ts",
+    "lint:fix": "npx eslint src/ --ext .ts --fix",
+    "prepare": "husky install"
   },
   "author": "Joe Banks <joe@jb3.dev>",
   "license": "MIT",
   "devDependencies": {
     "@cloudflare/workers-types": "^2.0.0",
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@typescript-eslint/eslint-plugin": "^3.9.0",
+    "@typescript-eslint/parser": "^3.9.0",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.7.0",
+    "eslint-config-marine": "^7.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "husky": "^6.0.0",
+    "lint-staged": "^10.2.13",
     "prettier": "^2.0.5",
-    "ts-loader": "^8.0.17",
-    "typescript": "^4.3.2",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.0"
+    "rollup": "^2.52.7",
+    "rollup-plugin-cleaner": "^1.0.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "typescript": "^4.3.4"
   },
   "dependencies": {
-    "8track": "^1.1.3"
+    "8track": "^1.1.3",
+    "discord-api-types": "^0.18.1"
   }
 }
