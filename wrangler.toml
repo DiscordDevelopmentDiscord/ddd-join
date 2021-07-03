@@ -1,7 +1,12 @@
-type = "webpack"
+type = "javascript"
 zone_id = "1702a6d65a738bb8649f47608d4ca26f"
 account_id = "0ce649ec8baabea8acd9fcc7d8de99ff"
 route = "ddd.jb3.dev/*"
 workers_dev = true
-webpack_config = "webpack.config.js"
 name = "ddd-join"
+
+[build]
+command = "npm install && npm run build"
+
+[build.upload]
+format = "service-worker"
