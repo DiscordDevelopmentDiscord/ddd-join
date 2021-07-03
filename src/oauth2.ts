@@ -7,6 +7,7 @@ import {
 	RESTGetAPICurrentUserGuildsResult,
 	RESTGetAPICurrentUserResult,
 	RESTPostOAuth2AccessTokenResult,
+	RouteBases,
 } from 'discord-api-types/v8';
 
 export async function getAccessToken(code: string) {
@@ -26,7 +27,7 @@ export async function getAccessToken(code: string) {
 }
 
 export async function getUserGuilds(access_token: string): Promise<string[]> {
-	const guildsReq = await makeRequest<RESTGetAPICurrentUserGuildsResult>(Routes.userGuilds(), {
+	const guildsReq = await makeRequest<RESTGetAPICurrentUserGuildsResult>(RouteBases.api + Routes.userGuilds(), {
 		headers: UTILS.auth(access_token),
 	});
 	const guilds = await guildsReq[0];
@@ -34,13 +35,13 @@ export async function getUserGuilds(access_token: string): Promise<string[]> {
 }
 
 export async function getUserDetails(access_token: string) {
-	return makeRequest<RESTGetAPICurrentUserResult>(Routes.user(), {
+	return makeRequest<RESTGetAPICurrentUserResult>(RouteBases.api + Routes.user(), {
 		headers: UTILS.auth(access_token),
 	}).then((x) => x[0]);
 }
 
 export async function joinUserToGuild(access_token: string, user_id: Snowflake) {
-	return makeRequest<APIGuildMember>(Routes.guildMember(DISCORD_GUILD_ID, user_id), {
+	return makeRequest<APIGuildMember>(RouteBases.api + Routes.guildMember(DISCORD_GUILD_ID, user_id), {
 		method: 'PUT',
 		headers: {
 			...CONSTANTS.headers.json,
