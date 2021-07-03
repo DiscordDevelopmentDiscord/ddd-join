@@ -25,7 +25,13 @@ export async function makeRequest<T extends Record<string, any>>(
 		throw new DiscordAPIError(parseErrorResponseBody.message, options.method!, route, req.status);
 	}
 
-	return [(await req.clone().json()) as Promise<T>, req];
+	return [
+		(await req
+			.clone()
+			.json()
+			.catch(() => ({}))) as Promise<T>,
+		req,
+	];
 }
 
 export class DiscordAPIError extends Error {
@@ -35,3 +41,11 @@ export class DiscordAPIError extends Error {
 }
 
 export type makeRequestResponseTuple<T> = Promise<[Promise<T>, Response]>;
+
+export const enum HTTPMethods {
+	Post = 'post',
+	Delete = 'delete',
+	Get = 'get',
+	Patch = 'patch',
+	Put = 'put',
+}

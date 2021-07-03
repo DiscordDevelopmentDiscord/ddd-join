@@ -1,4 +1,4 @@
-import { CONSTANTS, makeRequest, UTILS } from './util';
+import { CONSTANTS, HTTPMethods, makeRequest, UTILS } from './util';
 import {
 	Snowflake,
 	APIGuildMember,
@@ -20,7 +20,7 @@ export async function getAccessToken(code: string) {
 	});
 
 	return makeRequest<RESTPostOAuth2AccessTokenResult>(OAuth2Routes.tokenURL, {
-		method: 'POST',
+		method: HTTPMethods.Post,
 		headers: CONSTANTS.headers.urlencoded,
 		body,
 	});
@@ -41,8 +41,8 @@ export async function getUserDetails(access_token: string) {
 }
 
 export async function joinUserToGuild(access_token: string, user_id: Snowflake) {
-	return makeRequest<APIGuildMember>(RouteBases.api + Routes.guildMember(DISCORD_GUILD_ID, user_id), {
-		method: 'PUT',
+	return makeRequest<APIGuildMember | Record<never, never>>(Routes.guildMember(DISCORD_GUILD_ID, user_id), {
+		method: HTTPMethods.Put,
 		headers: {
 			...CONSTANTS.headers.json,
 			...UTILS.auth(DISCORD_BOT_TOKEN, 'Bot'),
@@ -59,7 +59,7 @@ export async function revokeToken(access_token: string) {
 	const creds = btoa(`${OAUTH2_CLIENT_ID}:${OAUTH2_CLIENT_SECRET}`);
 
 	return makeRequest(OAuth2Routes.tokenRevocationURL, {
-		method: 'POST',
+		method: HTTPMethods.Post,
 		headers: {
 			...CONSTANTS.headers.urlencoded,
 			...UTILS.auth(creds, 'Basic'),

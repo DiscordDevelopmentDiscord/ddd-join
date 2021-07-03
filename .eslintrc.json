@@ -4,6 +4,7 @@
         "project": "./tsconfig.eslint.json"
     },
     "rules": {
-        "@typescript-eslint/naming-convention": "off"
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/restrict-plus-operands": "off"
     }
 }
