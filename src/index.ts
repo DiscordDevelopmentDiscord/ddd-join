@@ -45,8 +45,8 @@ router.get`/callback`.handle(async (ctx) => {
 			return ctx.end('You are not authorized to join DDD.', { status: 403 });
 
 		const userDetails = await getUserDetails(accessToken);
-		const joinUserToGuildResponse = await (await joinUserToGuild(accessToken, userDetails.id))[1];
-		const revokeUserTokenResponse = await (await revokeToken(accessToken))[1];
+		const joinUserToGuildResponse = (await joinUserToGuild(accessToken, userDetails.id))[1];
+		const revokeUserTokenResponse = (await revokeToken(accessToken))[1];
 
 		if (!joinUserToGuildResponse.ok) return ctx.end('An unexpected error occurred while joining you to this guild.');
 
